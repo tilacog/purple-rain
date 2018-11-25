@@ -49,9 +49,13 @@ impl Drop {
 
     fn fall(&mut self) {
         self.y = self.y + self.y_speed;
+        self.y_speed = self.y_speed + 0.15; // acceleration
+
         // reset y position if drop falls off screen
         if self.y > HEIGHT {
-            self.y = 0.0
+            let mut rng = thread_rng();
+            self.y = rng.gen_range(-100.0, 0.0);
+            self.y_speed = rng.gen_range(4.0, 10.0);
         }
     }
 }
