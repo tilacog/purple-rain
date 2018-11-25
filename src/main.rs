@@ -27,6 +27,7 @@ struct Drop {
     x: f32,
     y: f32,
     y_speed: f32,
+    length: f32,
 }
 
 impl Drop {
@@ -37,7 +38,13 @@ impl Drop {
         // create new droplets just above the visible screen
         let y: f32 = rng.gen_range(-100.0, 0.0);
         let y_speed: f32 = rng.gen_range(4.0, 10.0);
-        Drop { x, y, y_speed }
+        let length: f32 = rng.gen_range(10.0, 20.0);
+        Drop {
+            x,
+            y,
+            y_speed,
+            length,
+        }
     }
 
     fn fall(&mut self) {
@@ -82,7 +89,7 @@ impl event::EventHandler for MainState {
         graphics::set_color(ctx, DROP_COLOR)?;
         for drop in &self.rain {
             let p1 = Point2::new(drop.x, drop.y);
-            let p2 = Point2::new(drop.x, drop.y + 10.0);
+            let p2 = Point2::new(drop.x, drop.y + drop.length);
             let points: [Point2; 2] = [p1, p2];
             graphics::line(ctx, &points, 5.0)?;
         }
