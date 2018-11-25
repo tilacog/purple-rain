@@ -1,0 +1,6 @@
+[package]
+authors = ["Tiago Guimarães <tilacog@gmail.com>"]
+name = "purple-rain"
+version = "0.1.0"
+[dependencies]
+ggez = "*"
