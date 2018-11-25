@@ -1,6 +1,11 @@
 extern crate ggez;
+extern crate rand;
 use ggez::graphics::{Color, Point2};
 use ggez::*;
+
+// TODO: use height and width values from a config file
+const HEIGHT: f32 = 600.0;
+const WIDTH: f32 = 800.0;
 
 static BG_COLOR: Color = Color {
     r: 0.901960784314, // 230
@@ -24,7 +29,7 @@ struct Drop {
 
 impl Drop {
     fn fall(&mut self) {
-        self.y = self.y % 600.0 + self.y_speed;
+        self.y = self.y % HEIGHT + self.y_speed;
     }
 }
 
@@ -64,7 +69,7 @@ impl event::EventHandler for MainState {
             let p1 = Point2::new(drop.x, drop.y);
             let p2 = Point2::new(drop.x, drop.y + 10.0);
             let points: [Point2; 2] = [p1, p2];
-            graphics::line(ctx, &points, 10.0)?;
+            graphics::line(ctx, &points, 5.0)?;
         }
 
         graphics::present(ctx);
