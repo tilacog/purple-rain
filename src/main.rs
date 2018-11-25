@@ -95,7 +95,7 @@ impl event::EventHandler for MainState {
             let p1 = Point2::new(drop.x, drop.y);
             let p2 = Point2::new(drop.x, drop.y + drop.length);
             let points: [Point2; 2] = [p1, p2];
-            graphics::line(ctx, &points, 5.0)?;
+            graphics::line(ctx, &points, 2.0)?;
         }
 
         graphics::present(ctx);
