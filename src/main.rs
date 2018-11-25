@@ -5,9 +5,20 @@ use ggez::graphics::{Color, Point2};
 use ggez::*;
 use rand::{thread_rng, Rng};
 
-// TODO: use height and width values from a config file
+// TODO: use a config file
 const HEIGHT: f32 = 600.0;
 const WIDTH: f32 = 800.0;
+const NUM_DROPS: u16 = 500;
+const ACCELERATION: f32 = 0.15;
+const Y_UPPER_BOUND_FACTOR: f32 = 4.0; // how much far off-screen drops can appear
+const MIN_Z: f32 = 0.0;
+const MAX_Z: f32 = 1.0;
+const MIN_Y_SPEED: f32 = 4.0;
+const MAX_Y_SPEED: f32 = 10.0;
+const MIN_THICKNESS: f32 = 1.0;
+const MAX_THICKNESS: f32 = 3.5;
+const MIN_LENGTH: f32 = 10.0;
+const MAX_LENGTH: f32 = 20.0;
 
 static BG_COLOR: Color = Color {
     r: 0.901960784314, // 230
@@ -26,7 +37,10 @@ static DROP_COLOR: Color = Color {
 struct Drop {
     x: f32,
     y: f32,
+    /// distant droplets are faster, shorter and thinner.
+    z: f32,
     y_speed: f32,
+    thickness: f32,
     length: f32,
 }
 
@@ -35,27 +49,40 @@ impl Drop {
     fn new() -> Drop {
         let mut rng = thread_rng();
         let x: f32 = rng.gen_range(0.0, WIDTH);
-        // create new droplets just above the visible screen
-        let y: f32 = rng.gen_range(-100.0, 0.0);
-        let y_speed: f32 = rng.gen_range(4.0, 10.0);
-        let length: f32 = rng.gen_range(10.0, 20.0);
+        let y: f32 = {
+            let upper_bound = HEIGHT / Y_UPPER_BOUND_FACTOR;
+            rng.gen_range(-upper_bound, 0.0)
+        };
+        let z: f32 = rng.gen_range(MIN_Z, MAX_Z);
+        let y_speed: f32 = rng.gen_range(MIN_Y_SPEED, MAX_Y_SPEED) * z;
+        let thickness: f32 = rng.gen_range(MIN_THICKNESS, MAX_THICKNESS) * z;
+        let length: f32 = rng.gen_range(MIN_LENGTH, MAX_LENGTH) * z;
+
         Drop {
             x,
             y,
+            z,
             y_speed,
+            thickness,
             length,
         }
     }
 
     fn fall(&mut self) {
         self.y = self.y + self.y_speed;
-        self.y_speed = self.y_speed + 0.15; // acceleration
+        self.y_speed = self.y_speed + ACCELERATION;
 
-        // reset y position if drop falls off screen
+        // reset drop (TODO: try to reuse code from `Drop::new`
         if self.y > HEIGHT {
             let mut rng = thread_rng();
-            self.y = rng.gen_range(-100.0, 0.0);
-            self.y_speed = rng.gen_range(4.0, 10.0);
+            self.x = rng.gen_range(0.0, WIDTH);
+            self.y = {
+                let upper_bound = HEIGHT / Y_UPPER_BOUND_FACTOR;
+                rng.gen_range(-upper_bound, 0.0)
+            };
+            self.z = rng.gen_range(MIN_Z, MAX_Z);
+            self.y_speed = rng.gen_range(MIN_Y_SPEED, MAX_Y_SPEED) * self.z;
+            self.thickness = rng.gen_range(MIN_THICKNESS, MAX_THICKNESS) * self.z;
         }
     }
 }
@@ -67,7 +94,7 @@ struct MainState {
 impl MainState {
     fn new(_ctx: &mut Context) -> GameResult<MainState> {
         let mut drops: Vec<Drop> = Vec::new();
-        for _ in 0..100 {
+        for _ in 0..NUM_DROPS {
             drops.push(Drop::new());
         }
         let state = MainState { rain: drops };
@@ -95,7 +122,7 @@ impl event::EventHandler for MainState {
             let p1 = Point2::new(drop.x, drop.y);
             let p2 = Point2::new(drop.x, drop.y + drop.length);
             let points: [Point2; 2] = [p1, p2];
-            graphics::line(ctx, &points, 2.0)?;
+            graphics::line(ctx, &points, drop.thickness)?;
         }
 
         graphics::present(ctx);
