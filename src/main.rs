@@ -1,7 +1,9 @@
 extern crate ggez;
 extern crate rand;
+
 use ggez::graphics::{Color, Point2};
 use ggez::*;
+use rand::{thread_rng, Rng};
 
 // TODO: use height and width values from a config file
 const HEIGHT: f32 = 600.0;
@@ -28,6 +30,15 @@ struct Drop {
 }
 
 impl Drop {
+    /// Create a new Drop at a random position
+    fn new() -> Drop {
+        let mut rng = thread_rng();
+        let x: f32 = rng.gen_range(0.0, WIDTH);
+        // create new droplets just above the visible screen
+        let y: f32 = rng.gen_range(-100.0, 0.0);
+        Drop { x, y, y_speed: 1.0 }
+    }
+
     fn fall(&mut self) {
         self.y = self.y % HEIGHT + self.y_speed;
     }
@@ -39,11 +50,10 @@ struct MainState {
 
 impl MainState {
     fn new(_ctx: &mut Context) -> GameResult<MainState> {
-        let drops = vec![Drop {
-            x: 400.0,
-            y: 0.0,
-            y_speed: 1.0,
-        }];
+        let mut drops: Vec<Drop> = Vec::new();
+        for _ in 0..100 {
+            drops.push(Drop::new());
+        }
         let state = MainState { rain: drops };
         Ok(state)
     }
