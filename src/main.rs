@@ -36,11 +36,16 @@ impl Drop {
         let x: f32 = rng.gen_range(0.0, WIDTH);
         // create new droplets just above the visible screen
         let y: f32 = rng.gen_range(-100.0, 0.0);
-        Drop { x, y, y_speed: 1.0 }
+        let y_speed: f32 = rng.gen_range(4.0, 10.0);
+        Drop { x, y, y_speed }
     }
 
     fn fall(&mut self) {
-        self.y = self.y % HEIGHT + self.y_speed;
+        self.y = self.y + self.y_speed;
+        // reset y position if drop falls off screen
+        if self.y > HEIGHT {
+            self.y = 0.0
+        }
     }
 }
 
